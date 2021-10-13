@@ -1,3 +1,5 @@
+USE Lv635_OnlineStore;
+DROP Trigger trg_DiscountAssignation_INS;
 -- =================================================================================================
 -- Author:			Maksym Bondaruk
 -- Creation date:	13.10.2021

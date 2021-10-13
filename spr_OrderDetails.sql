@@ -1,15 +1,15 @@
 USE Lv635_OnlineStore;
 
-SELECT * FROM OrderDetails;
+SELECT TOP 10 * FROM OrderDetails ORDER BY OrderDetailsID DESC;
 SELECT * FROM Products ORDER BY PriceUnit DESC;
-SELECT TOP 10 * FROM Orders;
+SELECT TOP 10 * FROM Orders ORDER BY OrderID DESC;
 SELECT * FROM Discounts;
 EXEC sp_help OrderDetails;
 EXEC sp_help Products;
 DROP PROCEDURE spr_NewOrderDetails;
 DROP TRIGGER trg_DiscountAssignation_INS;
 TRUNCATE TABLE OrderDetails;
-EXEC spr_NewOrderDetails 6, 777, 15; -- OrderID, ProdID, Qt
+EXEC spr_NewOrderDetails 5000013, 777, 2; -- OrderID, ProdID, Qt
 
 
 -- =================================================================================================
@@ -24,6 +24,7 @@ EXEC spr_NewOrderDetails 6, 777, 15; -- OrderID, ProdID, Qt
 --						3) ... the inconsistency of data in case when 
 --							QtInStock < Qt in OrderDetails (the warning is evoked
 --							and the procedure is stopped).
+--						4) ... VAT value on the basis of the TotalPrice of the order.
 -- =================================================================================================
 
 CREATE PROCEDURE spr_NewOrderDetails 
