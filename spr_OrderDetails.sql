@@ -12,7 +12,19 @@ TRUNCATE TABLE OrderDetails;
 EXEC spr_NewOrderDetails 6, 777, 15; -- OrderID, ProdID, Qt
 
 
--- spr_NewOrderDetails 
+-- =============================
+-- Author:			Maksym Bondaruk
+-- Creation date:	13.10.2021
+-- Description:		When new order is added into Orders, trigger is evoked to run the procedure
+--					and fill in the new order details. 
+--					Procedure calculates the ... 
+--						1) ... total order price (on the basis of the Qt and PriceUnit).
+--						2) ... decrementation of the goods in the warehouse 
+--							(after the new order details were added).
+--						3) ... the inconsistency of data in case when 
+--							QtInStock < Qt in OrderDetails (the warning is evoked
+--							and the procedure is stopped).
+
 CREATE PROCEDURE spr_NewOrderDetails 
 				@OrderID INT,  
 				@ProdID INT, 
@@ -105,4 +117,11 @@ BEGIN CATCH
 	END
 END CATCH;
 
+-- trg_NewOrderToOrderDetails_INS
+CREATE TRIGGER trg_NewOrderToOrderDetails_INS ON Orders 
+AFTER INSERT AS
+EXEC spr_NewOrderDetails 
+(SELECT OrderID FROM inserted),
+(SELECT FLOOR(RAND() * 100)), 
+(SELECT FLOOR(RAND() * 100));
 
