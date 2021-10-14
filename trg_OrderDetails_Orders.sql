@@ -11,43 +11,43 @@ CREATE TRIGGER trg_DiscountAssignation_INS ON
 OrderDetails AFTER INSERT AS
 BEGIN TRY
 -- 1st DiscountID
-	IF (SELECT TotalPrice FROM inserted) < 
+	IF (SELECT TotalPrice + VAT FROM inserted) < 
 		(SELECT UpperLimit FROM Discounts WHERE DiscountID = 1)
 		BEGIN
 			UPDATE OrderDetails SET DiscountID = 1 
 		WHERE OrderDetailsID = (SELECT OrderDetailsID FROM inserted);
 		END
 -- 2nd DiscountID
-	ELSE IF (SELECT TotalPrice FROM inserted) > 
+	ELSE IF (SELECT TotalPrice + VAT FROM inserted) > 
 		(SELECT LowerLimit FROM Discounts WHERE DiscountID = 2)
-		AND (SELECT TotalPrice FROM inserted) <
+		AND (SELECT TotalPrice + VAT FROM inserted) <
 		(SELECT UpperLimit FROM Discounts WHERE DiscountID = 2)
 		BEGIN
 			UPDATE OrderDetails SET DiscountID = 2 
 		WHERE OrderDetailsID = (SELECT OrderDetailsID FROM inserted);
 		END
 -- 3rd DiscountID
-	ELSE IF (SELECT TotalPrice FROM inserted) > 
+	ELSE IF (SELECT TotalPrice + VAT FROM inserted) > 
 		(SELECT LowerLimit FROM Discounts WHERE DiscountID = 3)
-		AND (SELECT TotalPrice FROM inserted) <
+		AND (SELECT TotalPrice + VAT FROM inserted) <
 		(SELECT UpperLimit FROM Discounts WHERE DiscountID = 3)
 		BEGIN
 			UPDATE OrderDetails SET DiscountID = 3 
 		WHERE OrderDetailsID = (SELECT OrderDetailsID FROM inserted);
 		END
 -- 4th DiscountID
-	ELSE IF (SELECT TotalPrice FROM inserted) > 
+	ELSE IF (SELECT TotalPrice + VAT FROM inserted) > 
 		(SELECT LowerLimit FROM Discounts WHERE DiscountID = 4)
-		AND (SELECT TotalPrice FROM inserted) <
+		AND (SELECT TotalPrice + VAT FROM inserted) <
 		(SELECT UpperLimit FROM Discounts WHERE DiscountID = 4)
 		BEGIN
 			UPDATE OrderDetails SET DiscountID = 4 
 		WHERE OrderDetailsID = (SELECT OrderDetailsID FROM inserted);
 		END
 -- 5th DiscountID
-	ELSE IF (SELECT TotalPrice FROM inserted) > 
+	ELSE IF (SELECT TotalPrice + VAT FROM inserted) > 
 		(SELECT LowerLimit FROM Discounts WHERE DiscountID = 5)
-		AND (SELECT TotalPrice FROM inserted) <
+		AND (SELECT TotalPrice + VAT FROM inserted) <
 		(SELECT UpperLimit FROM Discounts WHERE DiscountID = 5)
 		BEGIN
 			UPDATE OrderDetails SET DiscountID = 5 
