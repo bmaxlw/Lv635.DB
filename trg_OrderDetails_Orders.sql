@@ -1,5 +1,3 @@
-USE Lv635_OnlineStore;
-DROP Trigger trg_DiscountAssignation_INS;
 -- =================================================================================================
 -- Author:			Maksym Bondaruk
 -- Creation date:	13.10.2021
@@ -70,17 +68,31 @@ END CATCH;
 
 -- =================================================================================================
 -- Author:			Maksym Bondaruk
--- Creation date:	13.10.2021
--- Description:		When new order is added, trigger is fired to insert into OrderDetails ...
+-- Creation date:	14.10.2021
+-- Description:		When new order is added into Orders, 
+--					the trigger is fired to insert ...
 --					1) ... the OrderID, taken from Orders' inserted.
---					2) ... the ProductID, chosen randomly.
---					3) ... the Qt, chosen randomly.
+--					2) ... the ProductID, chosen randomly on the basis of the MAX(ProdID).
+--					3) ... the Qt, chosen randomly ...
+--					... into OrderDetails
 -- =================================================================================================
 
--- trg_NewOrderToOrderDetails_INS
-CREATE TRIGGER trg_NewOrderToOrderDetails_INS ON Orders 
-AFTER INSERT AS
-EXEC spr_NewOrderDetails 
-(SELECT OrderID FROM inserted),
-(SELECT FLOOR(RAND() * 100)), 
-(SELECT FLOOR(RAND() * 100));
+CREATE TRIGGER 
+	trg_NewOrderToOrderDetails_INS 
+	ON Orders AFTER INSERT AS
+BEGIN TRY
+	BEGIN
+		DECLARE @NewOrderID INT 
+			= (SELECT OrderID FROM inserted);
+		DECLARE @NewProdID INT 
+			= (FLOOR(RAND() * (SELECT MAX(ProdID) FROM Products)));
+		DECLARE @NewQt INT 
+			= (FLOOR(RAND() * 20));
+		EXEC spr_NewOrderDetails @NewOrderID, @NewProdID, @NewQt;
+	END;
+END TRY
+BEGIN CATCH
+	BEGIN
+		PRINT('FATAL ERROR!')
+	END;
+END CATCH;
