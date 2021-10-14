@@ -1,52 +1,27 @@
 USE Lv635_OnlineStore;
 
-SELECT TOP 10 * FROM Orders;
 SELECT TOP 10 * FROM OrderDetails;
+SELECT SUM(od.TotalPrice) FROM OrderDetails od JOIN Orders o ON od.OrderID = o.OrderID WHERE o.CustomerID = 100;
 SELECT TOP 10 * FROM Customers;
-SELECT TOP 10 * FROM Products;
-
-SELECT TOP 10 * FROM vw_ShowDetailedOrders;
-
-drop view vw_ShowDetailedOrders;
-
-CREATE VIEW vw_ShowDetailedOrders AS
-SELECT 
-	o.OrderID, od.OrderDetailsID,
-	o.CustomerID, p.ProdName, 
-	o.ShippingAddress, o.OrderDate, o.ShippingDate
-FROM 
-	Orders o
-JOIN
-	OrderDetails od ON
-	o.OrderID = od.OrderID
-JOIN
-	Products p ON 
-	od.ProdID = p.ProdID
-JOIN 
-	Customers c ON
-	o.CustomerID = c.CustomersID;
-
+SELECT * FROM Products WHERE ProdID = 769;
+SELECT * FROM Discounts;
 
 -- CustomerTotal
-SELECT o.CustomerID, 
-SUM(od.TotalPrice) CustomerTotal
-FROM OrderDetails od 
-JOIN Orders o
-ON od.OrderID = o.OrderID
-GROUP BY o.CustomerID ORDER BY o.CustomerID;
+SELECT 
+	o.CustomerID, 
+	COUNT(od.OrderID) OrdersTotal, --> The total number of orders, made by one customer
+	SUM(od.TotalPrice + od.VAT) CustomerTotal --> The total of money, spent by the definite customer (VAT included)
+FROM OrderDetails od
+JOIN Orders o ON od.OrderID = o.OrderID 
+WHERE o.CustomerID > 0 
+GROUP BY o.CustomerID 
+ORDER BY o.CustomerID;
 
-SELECT od.OrderID, p.CostUnit * od.Quantity FROM Products p JOIN OrderDetails od ON p.ProdID = od.ProdID;
-
-
-
-SELECT SUM(od.TotalPrice) FROM OrderDetails od JOIN Orders o ON od.OrderID = o.OrderID WHERE o.CustomerID = 1;
-SELECT * FROM Orders WHERE CustomerID = 351;
-
-SELECT TOP 10 * FROM Orders;
-SELECT * FROM OrderDetails WHERE OrderID = 818;
-SELECT * FROM Products WHERE ProdID = 559;
-select (217609.70 * 20)
-3956540.00
--- Totals
-
-DECLARE @vw_Launcher NVARCHAR(MAX) = 'EXEC ';
+-- Discount is applied to TotalPrice + VAT
+-- Final Price, to be paid by customer, is actually TotalPrice + VAT + Discount
+-- Thus the discount also directly affects the VAT and seller is intrested in setting discounts
+-- EXAMPLE
+-- Total Price:		1000 UAH
+-- VAT:				 200 UAH (1000 * 0.2)
+-- Discount (5%):	  60 UAH (1200 * 0.05)
+-- To be paid:		1140 UAH
