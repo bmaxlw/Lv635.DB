@@ -49,10 +49,10 @@ SELECT
 	vwb.MonthsAsCustomer [Months],
 	vwb.YearsAsCustomer [Years],
 	vwa.NumberOfOrders Orders,
-	vwa.NumberOfOrders / vwb.MonthsAsCustomer OrdersPerMonth,
-	vwa.NumberOfOrders / vwb.YearsAsCustomer OrdersPerYear,
-	ROUND((vwa.SpentPerCapita / MonthsAsCustomer), 2) SpentPerMonth,
-	ROUND((vwa.SpentPerCapita / YearsAsCustomer), 2) SpentPerYear,
+	vwa.NumberOfOrders / NULLIF(vwb.MonthsAsCustomer, 0) OrdersPerMonth,
+	vwa.NumberOfOrders / NULLIF(vwb.YearsAsCustomer, 0) OrdersPerYear,
+	ROUND((vwa.SpentPerCapita / NULLIF(MonthsAsCustomer, 0)), 2) SpentPerMonth,
+	ROUND((vwa.SpentPerCapita / NULLIF(YearsAsCustomer, 0)), 2) SpentPerYear,
 	vwa.SpentPerCapita TotalSpent
 FROM vw_Orders_Counter vwa 
 	JOIN vw_CustomerRegDate_Counter vwb ON vwa.CustomersID = vwb.CustomersID

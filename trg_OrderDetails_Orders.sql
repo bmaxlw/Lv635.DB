@@ -87,7 +87,7 @@ BEGIN TRY
 		DECLARE @NewProdID INT 
 			= (FLOOR(RAND() * (SELECT MAX(ProdID) FROM Products)));
 		DECLARE @NewQt INT 
-			= (FLOOR(RAND() * 20));
+			= (FLOOR(RAND() * 10) + 1);
 		EXEC spr_NewOrderDetails @NewOrderID, @NewProdID, @NewQt;
 	END;
 END TRY
