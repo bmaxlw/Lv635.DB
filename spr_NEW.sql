@@ -8,7 +8,14 @@ SELECT TOP 10 * FROM OrderDetails Order BY OrderDetailsID DESC;
 SELECT * FROM OrderDetails WHERE OrderID = 2;
 SELECT * FROM Customers;
 
-CREATE PROCEDURE stp_ShowProfits
+
+-- =================================================================================================
+-- Author:			Maksym Bondaruk
+-- Creation date:	26.10.2021
+-- Description:		Procedure presents the net profits per order per predefined date range, including
+--                  the total net income for the selected dates.
+-- =================================================================================================
+CREATE PROCEDURE spr_ShowProfits
     @From DATE,
     @To DATE
 AS
@@ -29,6 +36,6 @@ BETWEEN @From AND @To;
 
 
 -- Maintanence
-EXEC stp_ShowProfits '2021-10-25', '2021-10-25';
+EXEC spr_ShowProfits '2021-10-25', '2021-10-25';
 DROP PROCEDURE stp_ShowProfits;
 EXEC spr_GenerateNewOrder;
