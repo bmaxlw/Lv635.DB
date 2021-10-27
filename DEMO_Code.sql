@@ -2,7 +2,8 @@ USE Lv635_OnlineStore;
 
 -- trg_NewOrderToOrderDetails_INS
 EXEC spr_GenerateNewOrder
-SELECT TOP 5 OrderID, OrderDate, CustomerID, ShippingAddress, ShippingDate FROM Orders ORDER BY OrderID DESC;
+SELECT TOP 5 OrderID, OrderDate, CustomerID, ShippingAddress, ShippingDate 
+FROM Orders ORDER BY OrderID DESC;
 SELECT TOP 5 * FROM OrderDetails ORDER BY OrderDetailsID DESC;
 
 -- spr_NewOrderDetails
