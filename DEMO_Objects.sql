@@ -46,36 +46,66 @@ END CATCH;
 --						4) ... VAT value on the basis of the TotalPrice of the order.
 -- =================================================================================================
 
-CREATE PROCEDURE spr_NewOrderDetails 
-				@OrderID INT,  
-				@ProdID INT, 
-				@Qt INT
+CREATE PROCEDURE spr_NewOrderDetails
+    @OrderID INT,
+    @ProdID INT,
+    @Qt INT
 AS
 BEGIN TRY
-	IF (SELECT QtInStock FROM Products WHERE ProdID = @ProdID) > @Qt
-		BEGIN
--- Insert new order details:
-			INSERT INTO OrderDetails(OrderID, ProdID, Quantity, VAT, TotalPrice)
-				VALUES 
-					(@OrderID, @ProdID, @Qt,
-					((SELECT PriceUnit FROM Products
-				WHERE ProdID = @ProdID) * 0.2) * @Qt, 
-					(SELECT PriceUnit FROM Products
-				WHERE ProdID = @ProdID) * @Qt);
--- Update quantity in stock in Products:
-			UPDATE Products SET QtInStock = QtInStock - @Qt 
-				WHERE ProdID = @ProdID;
-		END
--- If QtInStock < Qt in OrderDetails - fire an error message: 
-	ELSE
-		BEGIN
-			PRINT 'ERROR! Not enough products available in stock!';
-		END
+    EXEC [dbo].[spr_LogProc] @ProcessName = 'spr_NewOrderDetails',
+                             @LevelProcedure = 'START'
+	-- IF QT < QT in Stock condition
+    IF
+    (
+        SELECT QtInStock FROM Products WHERE ProdID = @ProdID
+    ) > @Qt
+    BEGIN
+        -- Insert new order details:
+        INSERT INTO OrderDetails
+        (
+            OrderID,
+            ProdID,
+            Quantity,
+            VAT,
+            TotalPrice
+        )
+        VALUES
+        (   @OrderID,
+            @ProdID,
+            @Qt,
+            (
+            (
+                SELECT PriceUnit FROM Products WHERE ProdID = @ProdID --> VAT
+            ) * 0.2
+            ) * @Qt,
+            (
+                SELECT PriceUnit FROM Products WHERE ProdID = @ProdID --> TotalPrice
+            ) * @Qt
+        );
+        -- Update quantity in stock in Products:
+        UPDATE Products
+        SET QtInStock = QtInStock - @Qt
+        WHERE ProdID = @ProdID;
+    END
+    -- If QtInStock < Qt in OrderDetails - fire an error message: 
+    ELSE
+    BEGIN
+        PRINT 'ERROR! Not enough products available in stock!';
+    END
+    EXEC [dbo].[spr_LogProc] @ProcessName = 'spr_NewOrderDetails',
+                             @LevelProcedure = 'STOP'
 END TRY
 BEGIN CATCH
-	BEGIN
-		PRINT 'FATAL ERROR!'
-	END
+    BEGIN
+        DECLARE @Error_message NVARCHAR(100)
+        SET @Error_message =
+        (
+            SELECT ERROR_MESSAGE()
+        )
+        EXEC [dbo].[spr_LogProc] @ProcessName = 'spr_NewOrderDetails',
+                                 @LevelProcedure = 'FATAL',
+                                 @Context = @Error_message
+    END
 END CATCH;
 
 -- =================================================================================================
@@ -158,20 +188,40 @@ CREATE PROCEDURE spr_ShowProfits
     @From DATE,
     @To DATE
 AS
-SELECT od.OrderID,
-       od.ProdID,
-	   od.Quantity,
-       (p.CostUnit * od.Quantity) OrderPurchasePrice,
-       od.TotalPrice,
-       od.TotalPrice - (p.CostUnit * od.Quantity) OrderNetProfit,
-       SUM(od.TotalPrice - (p.CostUnit * od.Quantity)) OVER (PARTITION BY @From) TotalNetProfit
-FROM Products p
-    JOIN OrderDetails od
-        ON p.ProdID = od.ProdID
-    JOIN Orders o
-        ON od.OrderID = o.OrderID
-WHERE o.OrderDate
-BETWEEN @From AND @To;
+BEGIN TRY
+    EXEC [dbo].[spr_LogProc] @ProcessName = 'spr_ShowProfits',
+                             @LevelProcedure = 'START'
+    BEGIN
+        SELECT od.OrderID,
+               od.ProdID,
+               od.Quantity,
+               (p.CostUnit * od.Quantity) OrderPurchasePrice,
+               od.TotalPrice,
+               od.TotalPrice - (p.CostUnit * od.Quantity) OrderNetProfit,
+               SUM(od.TotalPrice - (p.CostUnit * od.Quantity)) OVER (PARTITION BY @From) TotalNetProfit
+        FROM Products p
+            JOIN OrderDetails od
+                ON p.ProdID = od.ProdID
+            JOIN Orders o
+                ON od.OrderID = o.OrderID
+        WHERE o.OrderDate
+        BETWEEN @From AND @To;
+    END
+    EXEC [dbo].[spr_LogProc] @ProcessName = 'spr_ShowProfits',
+                             @LevelProcedure = 'STOP'
+END TRY
+BEGIN CATCH
+    BEGIN
+        DECLARE @Error_message NVARCHAR(100)
+        SET @Error_message =
+        (
+            SELECT ERROR_MESSAGE()
+        )
+        EXEC [dbo].[spr_LogProc] @ProcessName = 'spr_ShowProfits',
+                                 @LevelProcedure = 'FATAL',
+                                 @Context = @Error_message
+    END
+END CATCH;
 
 -- =================================================================================================
 -- Object:          fn_QtChecker
@@ -218,7 +268,8 @@ CREATE VIEW vw_Orders_Counter AS
 -- Object:          vw_CustomerRegDate_Counter
 -- Author:			Maksym Bondaruk
 -- Creation date:	15.10.2021
--- Description:		VIEW represents the number of days, the customer is registered in our database
+-- Description:		VIEW represents the number of days, months and years 
+--					the customer is registered in our database
 -- =================================================================================================
 
 CREATE VIEW vw_CustomerRegDate_Counter AS
