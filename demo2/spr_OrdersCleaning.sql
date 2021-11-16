@@ -136,7 +136,6 @@ BEGIN TRY
         BEGIN
             DECLARE @Ckey INT = (SELECT MIN(CompositeKey) FROM ##Composite);
             DECLARE @MinID INT = (SELECT MIN(Identificator) FROM ##Composite WHERE CompositeKey = @Ckey);
-            DECLARE @MaxID INT = (SELECT MAX(Identificator) FROM ##Composite WHERE CompositeKey = @Ckey);
 
             INSERT INTO [dbo].FactOrders (OrderID,
                                           OrderDetailsID,
