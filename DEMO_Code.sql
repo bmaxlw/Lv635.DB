@@ -23,7 +23,7 @@ EXEC spr_ShowProfits '2021-10-25', '2021-10-26';
 SELECT OrderID, OrderDate FROM Orders WHERE OrderDate IN ('2021-10-25', '2021-10-26');
 
 -- fn_QtChecker
-SELECT * FROM fn_QtChecker(0, 1);
+SELECT * FROM fn_QtChecker(1, 7);
 
 -- vw_Orders_Counter + vw_CustomerRegDate_Counter + 
 SELECT * FROM vw_Orders_Counter;
