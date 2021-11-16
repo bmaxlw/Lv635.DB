@@ -31,7 +31,7 @@ BEGIN TRY
                                        WarrantyStartDate,
                                        WarrantyExpDate,
                                        AssignedTo)
-        SELECT '[spr_DiscardConversionIssues_Orders]: Conversion failed',
+        SELECT '[Error 1]: Conversion failed',
                OrderID,
                OrderDetailsID,
                OrderDate,
@@ -195,7 +195,7 @@ BEGIN TRY
                                            WarrantyStartDate,
                                            WarrantyExpDate,
                                            AssignedTo)
-            SELECT 'Duplicated values assigned for PKEYs',
+            SELECT '[Error 2]: Duplicated values assigned for PKEYs',
                    OrderID,
                    OrderDetailsID,
                    OrderDate,
@@ -261,7 +261,7 @@ BEGIN TRY
                                        WarrantyStartDate,
                                        WarrantyExpDate,
                                        AssignedTo)
-        SELECT '[spr_DiscardIncorrectValuesByLimits_Orders]: Formatting limit(s) violated',
+        SELECT '[Error 3]: Date/Length Formatting violated',
                OrderID,
                OrderDetailsID,
                OrderDate,
