@@ -1,3 +1,54 @@
+USE Lv635_Staging;
+
+
+SELECT COUNT(*) FROM stg.FactOrders;
+SELECT * FROM dbo.FactOrders;
+SELECT * FROM stg.ErrorOrders;
+
+EXEC sp_help FactOrders;
+
+TRUNCATE TABLE stg.FactOrders;
+TRUNCATE TABLE dbo.FactOrders;
+TRUNCATE TABLE stg.ErrorOrders;
+
+INSERT INTO stg.FactOrders VALUES('1', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('1', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('1', '2', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('1', '3', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('2', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('2', '2', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('2', '2', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('2', '3', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('2', '3', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+
+INSERT INTO stg.FactOrders VALUES('2', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('1', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('xx', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('3', '1', '2013-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '1', 'Cash', '2021-01-01', '2021-01-01', '1');
+INSERT INTO stg.FactOrders VALUES('4', '1', '2021-01-01', '2021-01-01', '1', '1', '1', '1.00', '1.00', 'Street', '1', '2147483648', 'Cash', '2021-01-01', '2021-01-01', '1');
+
+DROP PROC spr_DiscardConversionIssues_Orders; --> FIRST
+DROP PROC spr_DiscardDuplicates_Orders; --> SECOND
+DROP PROC spr_DiscardIncorrectValues_Orders; --> THIRD
+DROP PROC spr_Conversion_Orders; --> FOURTH;
+DROP PROC spr_CleanStgOrders;
+
+
+EXEC spr_OrdersCleaning
+
+SELECT * FROM [Lv635_Staging].stg.FactOrders;
+SELECT * FROM [Lv635_Staging].dbo.FactOrders;
+SELECT * FROM [Lv635_Staging].stg.ErrorOrders;
+
+SELECT TOP 10 * FROM [Lv635_DataWarehouse].dbo.FactOrders;
+SELECT * FROM Lv635_OnlineStore.dbo.LogTable
+
+TRUNCATE TABLE [Lv635_Staging].dbo.FactOrders;
+TRUNCATE TABLE [Lv635_Staging].stg.FactOrders;
+TRUNCATE TABLE [Lv635_DataWarehouse].dbo.FactOrders;
+TRUNCATE TABLE [Lv635_Staging].stg.ErrorOrders;
+
+
 BEGIN
 CREATE TABLE ##Composite(
 Identificator INT IDENTITY(1, 1),
