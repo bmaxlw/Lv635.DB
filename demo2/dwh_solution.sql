@@ -7,7 +7,7 @@
 CREATE PROCEDURE spr_OrdersMigrationDWH
 AS
 BEGIN TRY
-    EXEC [Lv635_OnlineStore].[dbo].[spr_LogProc] @ProcessName = '[MBLV635DB]: spr_OrdersMigrationDWH',
+    EXEC [Lv635_OnlineStore].[dbo].[spr_LogProc] @ProcessName = '[spr_OrdersMigrationDWH]: MAIN',
                                                  @LevelProcedure = 'START'
     SET NOCOUNT ON;
     SET ANSI_WARNINGS OFF;
@@ -64,13 +64,13 @@ BEGIN TRY
                 SRC.WarrantyStartDate,
                 SRC.WarrantyExpDate,
                 SRC.AssignedTo);
-    EXEC [Lv635_OnlineStore].[dbo].[spr_LogProc] @ProcessName = '[MBLV635DB]: spr_OrdersMigrationDWH',
+    EXEC [Lv635_OnlineStore].[dbo].[spr_LogProc] @ProcessName = '[spr_OrdersMigrationDWH]: MAIN',
                                                  @LevelProcedure = 'STOP'
 END TRY
 BEGIN CATCH
     DECLARE @Error_message NVARCHAR(100)
     SET @Error_message = (SELECT ERROR_MESSAGE())
-    EXEC [Lv635_OnlineStore].[dbo].[spr_LogProc] @ProcessName = '[MBLV635DB]: spr_OrdersMigrationDWH',
+    EXEC [Lv635_OnlineStore].[dbo].[spr_LogProc] @ProcessName = '[spr_OrdersMigrationDWH]: MAIN',
                                                  @LevelProcedure = 'FATAL',
                                                  @Context = @Error_message
 END CATCH;
