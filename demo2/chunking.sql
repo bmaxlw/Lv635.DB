@@ -1,0 +1,178 @@
+CREATE PROCEDURE spr_Orders
+AS
+--SET NOCOUNT ON;
+BEGIN TRY
+    WHILE ((SELECT COUNT(*) FROM stg.FactOrders) <> 0)
+    BEGIN
+        CREATE TABLE ##Mediator (
+            Ranking INT,
+            OrderID INT,
+            OrderDetailsID INT,
+            OrderDate DATE,
+            ShippingDate DATE,
+            CustomerID INT,
+            ProdID INT,
+            Quantity INT,
+            VAT NUMERIC(19, 2),
+            TotalPrice NUMERIC(19, 2),
+            ShippingAddress NVARCHAR(70),
+            ShippingID INT,
+            DiscountID INT,
+            PaymentMethod NVARCHAR(70),
+            WarrantyStartDate DATE,
+            WarrantyExpDate DATE,
+            AssignedTo INT);
+        WITH Chunking (Ranking, OrderID, OrderDetailsID, OrderDate, ShippingDate, CustomerID, ProdID, Quantity, VAT,
+                       TotalPrice, ShippingAddress, ShippingID, DiscountID, PaymentMethod, WarrantyStartDate,
+                       WarrantyExpDate, AssignedTo)
+          AS (SELECT TOP 10 ROW_NUMBER() OVER (PARTITION BY (OrderID + OrderDetailsID) ORDER BY OrderID) Ranking,
+                     TRY_CAST(OrderID AS INT),
+                     TRY_CAST(OrderDetailsID AS INT),
+                     TRY_CAST(OrderDate AS DATE),
+                     TRY_CAST(ShippingDate AS DATE),
+                     TRY_CAST(CustomerID AS INT),
+                     TRY_CAST(ProdID AS INT),
+                     TRY_CAST(Quantity AS INT),
+                     TRY_CAST(VAT AS NUMERIC(19, 2)),
+                     TRY_CAST(TotalPrice AS NUMERIC(19, 2)),
+                     TRY_CAST(ShippingAddress AS NVARCHAR(100)),
+                     TRY_CAST(ShippingID AS INT),
+                     TRY_CAST(DiscountID AS INT),
+                     TRY_CAST(PaymentMethod AS NVARCHAR(50)),
+                     TRY_CAST(WarrantyStartDate AS DATE),
+                     TRY_CAST(WarrantyExpDate AS DATE),
+                     TRY_CAST(AssignedTo AS INT)
+                FROM stg.FactOrders)
+        DELETE Chunking
+        OUTPUT DELETED.Ranking,
+               DELETED.OrderID,
+               DELETED.OrderDetailsID,
+               DELETED.OrderDate,
+               DELETED.ShippingDate,
+               DELETED.CustomerID,
+               DELETED.ProdID,
+               DELETED.Quantity,
+               DELETED.VAT,
+               DELETED.TotalPrice,
+               DELETED.ShippingAddress,
+               DELETED.ShippingID,
+               DELETED.DiscountID,
+               DELETED.PaymentMethod,
+               DELETED.WarrantyStartDate,
+               DELETED.WarrantyExpDate,
+               DELETED.AssignedTo
+        INTO ##Mediator;
+        INSERT INTO dbo.FactOrders (OrderID,
+                                    OrderDetailsID,
+                                    OrderDate,
+                                    ShippingDate,
+                                    CustomerID,
+                                    ProdID,
+                                    Quantity,
+                                    VAT,
+                                    TotalPrice,
+                                    ShippingAddress,
+                                    ShippingID,
+                                    DiscountID,
+                                    PaymentMethod,
+                                    WarrantyStartDate,
+                                    WarrantyExpDate,
+                                    AssignedTo)
+        SELECT OrderID,
+               OrderDetailsID,
+               OrderDate,
+               ShippingDate,
+               CustomerID,
+               ProdID,
+               Quantity,
+               VAT,
+               TotalPrice,
+               ShippingAddress,
+               ShippingID,
+               DiscountID,
+               PaymentMethod,
+               WarrantyStartDate,
+               WarrantyExpDate,
+               AssignedTo
+          FROM ##Mediator
+         WHERE Ranking = 1;
+        INSERT INTO stg.ErrorOrders (ErrorDescription,
+                                     OrderID,
+                                     OrderDetailsID,
+                                     OrderDate,
+                                     ShippingDate,
+                                     CustomerID,
+                                     ProdID,
+                                     Quantity,
+                                     VAT,
+                                     TotalPrice,
+                                     ShippingAddress,
+                                     ShippingID,
+                                     DiscountID,
+                                     PaymentMethod,
+                                     WarrantyStartDate,
+                                     WarrantyExpDate,
+                                     AssignedTo)
+        SELECT 'Duplicates for PKeys',
+               OrderID,
+               OrderDetailsID,
+               OrderDate,
+               ShippingDate,
+               CustomerID,
+               ProdID,
+               Quantity,
+               VAT,
+               TotalPrice,
+               ShippingAddress,
+               ShippingID,
+               DiscountID,
+               PaymentMethod,
+               WarrantyStartDate,
+               WarrantyExpDate,
+               AssignedTo
+          FROM ##Mediator
+         WHERE Ranking > 1;
+        DROP TABLE ##Mediator;
+        EXEC spr_Orders;
+    END
+END TRY
+BEGIN CATCH
+    INSERT INTO stg.ErrorOrders (ErrorDescription,
+                                 OrderID,
+                                 OrderDetailsID,
+                                 OrderDate,
+                                 ShippingDate,
+                                 CustomerID,
+                                 ProdID,
+                                 Quantity,
+                                 VAT,
+                                 TotalPrice,
+                                 ShippingAddress,
+                                 ShippingID,
+                                 DiscountID,
+                                 PaymentMethod,
+                                 WarrantyStartDate,
+                                 WarrantyExpDate,
+                                 AssignedTo)
+    SELECT 'ERROR Duplicates for PKeys',
+           OrderID,
+           OrderDetailsID,
+           OrderDate,
+           ShippingDate,
+           CustomerID,
+           ProdID,
+           Quantity,
+           VAT,
+           TotalPrice,
+           ShippingAddress,
+           ShippingID,
+           DiscountID,
+           PaymentMethod,
+           WarrantyStartDate,
+           WarrantyExpDate,
+           AssignedTo
+      FROM ##Mediator
+     WHERE Ranking > 1;
+    DROP TABLE ##Mediator;
+    EXEC spr_Orders;
+END CATCH;
