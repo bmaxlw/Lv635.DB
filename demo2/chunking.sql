@@ -1,6 +1,6 @@
-CREATE PROCEDURE spr_Orders
+ALTER PROCEDURE spr_Orders
 AS
---SET NOCOUNT ON;
+SET NOCOUNT ON;
 BEGIN TRY
     WHILE ((SELECT COUNT(*) FROM stg.FactOrders) <> 0)
     BEGIN
@@ -113,7 +113,7 @@ BEGIN TRY
                                      WarrantyStartDate,
                                      WarrantyExpDate,
                                      AssignedTo)
-        SELECT 'Duplicates for PKeys',
+        SELECT 'Error 3. Duplicates assigned for Primary Keys.',
                OrderID,
                OrderDetailsID,
                OrderDate,
@@ -133,7 +133,6 @@ BEGIN TRY
           FROM ##Mediator
          WHERE Ranking > 1;
         DROP TABLE ##Mediator;
-        EXEC spr_Orders;
     END
 END TRY
 BEGIN CATCH
@@ -154,7 +153,7 @@ BEGIN CATCH
                                  WarrantyStartDate,
                                  WarrantyExpDate,
                                  AssignedTo)
-    SELECT 'ERROR Duplicates for PKeys',
+    SELECT ERROR_MESSAGE(),
            OrderID,
            OrderDetailsID,
            OrderDate,
